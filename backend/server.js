@@ -75,10 +75,25 @@ app.get('/participants', (req, res) => {
 
 });
 
+
+async function getData(obj) {
+    var results = await Interviews.findAll({
+        where: {
+            date: obj.date,
+            startTime: obj.startTime,
+            endTime: obj.endTime,
+        },
+        attributes: ['participantId'],
+    })
+    console.log("getData() result : ", results);
+    let pArray = results.map((res) => res.dataValues.participantId);
+    console.log("pArray() : ", pArray);
+    return results;
+}
+
 app.get('/interviews', function (req, res) {
 
     let cDate = new Date();
-
     Interviews.findAll({
         where: {
             date: {
@@ -86,17 +101,69 @@ app.get('/interviews', function (req, res) {
             }
         },
         // attributes: ['date', 'startTime', 'endTime'],
-        order: [['date', 'ASC'], ['startTime', 'ASC'], ['endTime', 'ASC'], ['participantId', 'ASC']]
+        order: [['date', 'ASC'], ['startTime', 'ASC'], ['endTime', 'ASC'], ['participantId', 'ASC']],
         // group: ['date', 'startTime', 'endTime']
     })
         .then((records) => {
             console.log("records : ", records);
+            // let distinctSchedules = records.map((rec) => ({
+            //     date: rec.date,
+            //     startTime: rec.startTime,
+            //     endTime: rec.endTime,
+            // }))
+            // console.log("distinctSchedules : ", distinctSchedules);
 
+            // let fullData = distinctSchedules.map((ds) => {
+
+            //     getData(ds, ())
+
+            //     return ({
+            //         date: ds.date,
+            //         startTime: ds.startTime,
+            //         endTime: ds.endTime,
+            //         participants: 
+            //     });
+            //     // Interviews.findAll({
+            //     //     where: {
+            //     //         date: {
+            //     //             [Op.gte]: cDate,
+            //     //         }
+            //     //     },
+            //     //     // attributes: ['date', 'startTime', 'endTime'],
+            //     //     order: [['date', 'ASC'], ['startTime', 'ASC'], ['endTime', 'ASC'], ['participantId', 'ASC']],
+            //     //     group: ['date', 'startTime', 'endTime']
+            //     // })
+
+            // })
+            // console.log("Full Data ===> ", fullData);
             res.json(records);
         })
 
 })
 
+app.get('/distinctschedules', function (req, res) {
+    let cDate = new Date();
+    Interviews.findAll({
+        where: {
+            date: {
+                [Op.gte]: cDate,
+            }
+        },
+        // attributes: ['date', 'startTime', 'endTime'],
+        order: [['date', 'ASC'], ['startTime', 'ASC'], ['endTime', 'ASC'], ['participantId', 'ASC']],
+        group: ['date', 'startTime', 'endTime']
+    })
+        .then((records) => {
+            console.log("records : ", records);
+            let distinctSchedules = records.map((rec) => ({
+                date: rec.date,
+                startTime: rec.startTime,
+                endTime: rec.endTime,
+            }))
+            console.log("distinctSchedules : ", distinctSchedules);
+            res.json(distinctSchedules);
+        })
+})
 
 app.post('/interviews', function (req, res) {
     // console.log("Request : ", req);
