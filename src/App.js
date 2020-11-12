@@ -7,6 +7,7 @@ import Navbar from "./Navbar";
 import Heading from "./Heading";
 import InterviewList from "./InterviewList";
 import AddInterview from "./AddInterview";
+import EditInterview from './EditInterview';
 
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <br />
           <Route path="/" exact component={InterviewList} />
           <Route path="/add" component={AddInterview} />
+          <Route path="/edit" component={EditInterview} />
         </div>
 
       </Router >
