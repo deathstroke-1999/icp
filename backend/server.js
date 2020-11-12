@@ -203,7 +203,6 @@ app.post('/interviews', function (req, res) {
                 else {
                     // record -> null
                     console.log("NO CLASH");
-
                     lisOfparticipants.forEach(function (oneParticipant) {
                         // console.log("oneParticipant : ", oneParticipant);
                         let newInterview = {

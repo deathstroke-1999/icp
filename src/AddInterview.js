@@ -78,7 +78,7 @@ class AddInterview extends Component {
       .then((res) => {
         console.log("res => ", res);
         console.log(res.data);
-        // window.location = '/';
+        window.location = '/';
       })
       .catch((error) => {
         // console.log("IN CATCH");
