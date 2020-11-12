@@ -9,6 +9,12 @@ const Checkbox = ({ type = 'checkbox', name, checked = false, onChange }) => (
   <input type={type} name={name} checked={checked} onChange={onChange} />
 );
 
+const Error = ({ message }) => (
+  <div className="alert alert-danger" role="alert">
+    OOPS! {message}
+  </div>
+)
+
 class AddInterview extends Component {
 
   constructor(props) {
@@ -20,6 +26,8 @@ class AddInterview extends Component {
       endTime: '',
       participants: [],
       checkedItems: new Map(),
+      error: false,
+      errorMsg: ""
     }
     this.handleDateChange = this.handleDateChange.bind(this);
     this.handleCheckBoxChange = this.handleCheckBoxChange.bind(this);
@@ -70,11 +78,25 @@ class AddInterview extends Component {
       .then((res) => {
         console.log("res => ", res);
         console.log(res.data);
-      });
-
-    window.location = '/';
+        window.location = '/';
+      })
+      .catch((error) => {
+        // console.log("IN CATCH");
+        // console.log("Error : ", error);
+        // console.log("Error : ", error.message);
+        // console.log("error.response.data : ", error.response.data.message);
+        let errorMsg = error.response.data.message;
+        this.setState({
+          error: true,
+          errorMsg: errorMsg
+        })
+      })
+    // console.log("CATCH SKIPPED");
+    // if (!this.state.error) {
+    //   console.log("NO ERROR REROUTING ");
+    //   // window.location = '/';
+    // }
   }
-
 
   handleDateChange(newDate) {
     this.setState({
@@ -106,6 +128,11 @@ class AddInterview extends Component {
     return (
       <div className="bg-light">
         <h3> Create Interview</h3>
+
+        {this.state.error ?
+          (<Error message={this.state.errorMsg} />) : (<></>)
+        }
+
         <form onSubmit={this.handleFormSubmit}>
 
           <div className="form-group">

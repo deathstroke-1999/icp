@@ -27,6 +27,10 @@ const Interviews = db.define('interview', {
     autoIncrement: true,
     primaryKey: true
   },
+  // participant_id: {
+  //   type: Sequelize.INTEGER,
+  //   allowNull: false,
+  // },
   date: {
     type: Sequelize.DATEONLY,
     allowNull: false,
