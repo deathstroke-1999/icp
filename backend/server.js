@@ -91,11 +91,6 @@ app.get('/interviews', function (req, res) {
     })
         .then((records) => {
             console.log("records : ", records);
-            // console.log("records : ", records.map);
-            // console.log("Mapping : ");
-            // let datesAndTimes = records.map((rec) => rec.dataValues)
-
-            // datesAndTimes.forEach
 
             res.json(records);
         })
@@ -250,22 +245,3 @@ db.sync().then(() => {
         console.log(`Server started on http://localhost:${PORT}`);
     })
 })
-
-
-// Interviews.findOne({
-//     where: {
-//         date: date_INC,
-//         [Op.or]: [{
-//             endTime: {
-//                 [Op.gte]: startTime_INC
-//             }
-//         }, {
-//             startTime: {
-//                 [Op.lte]: endTime_INC
-//             }
-//         }],
-//         participantId: {
-//             [Op.in]: participantIdArray
-//         }
-//     }
-// })

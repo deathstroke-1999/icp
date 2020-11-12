@@ -29,6 +29,7 @@ class AddInterview extends Component {
       error: false,
       errorMsg: ""
     }
+
     this.handleDateChange = this.handleDateChange.bind(this);
     this.handleCheckBoxChange = this.handleCheckBoxChange.bind(this);
     this.handleFormSubmit = this.handleFormSubmit.bind(this);
@@ -36,7 +37,6 @@ class AddInterview extends Component {
     this.handleEndTimeChange = this.handleEndTimeChange.bind(this);
 
   }
-
 
   componentDidMount() {
     axios.get('http://localhost:5000/participants')
@@ -63,7 +63,6 @@ class AddInterview extends Component {
     let lisOfparticipants = this.state.participants.filter(one => this.state.checkedItems.get(one.email))
     console.log("lisOfparticipants : ", lisOfparticipants);
 
-
     const newInterview = {
       date: this.state.date,
       startTime: this.state.startTime,
@@ -81,21 +80,12 @@ class AddInterview extends Component {
         window.location = '/';
       })
       .catch((error) => {
-        // console.log("IN CATCH");
-        // console.log("Error : ", error);
-        // console.log("Error : ", error.message);
-        // console.log("error.response.data : ", error.response.data.message);
         let errorMsg = error.response.data.message;
         this.setState({
           error: true,
           errorMsg: errorMsg
         })
       })
-    // console.log("CATCH SKIPPED");
-    // if (!this.state.error) {
-    //   console.log("NO ERROR REROUTING ");
-    //   // window.location = '/';
-    // }
   }
 
   handleDateChange(newDate) {

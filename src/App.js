@@ -22,9 +22,6 @@ function App() {
           <br />
           <Route path="/" exact component={InterviewList} />
           <Route path="/add" component={AddInterview} />
-          {/* <Route path="/create" component={CreateExercise} />
-
-<Route path="/user" component={CreateUser} /> */}
         </div>
 
       </Router >

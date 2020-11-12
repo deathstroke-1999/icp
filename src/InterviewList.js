@@ -10,7 +10,6 @@ class InterviewList extends Component {
       interviews: [],
       participants: [],
     }
-    // this.deleteExercise = this.deleteExercise.bind(this);
   }
 
   componentDidMount() {
@@ -34,7 +33,6 @@ class InterviewList extends Component {
         this.setState({
           interviews: res.data,
         })
-        // console.log("Updated STATE : ", this.state.participants);
       })
       .catch((error) => {
         console.log("Error : ", error);
