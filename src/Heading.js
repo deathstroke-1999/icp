@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 
-
 class Heading extends Component {
   render() {
-
     return (
       <>
-        <h1> SOME LOGOG + HEADING</h1>
+        <h2 style={{ color: "whitesmoke", textAlign: "center", padding: 2 }}> <i class="far fa-file"></i> &nbsp; ICP : InterviewCreationPortal</h2>
       </>
     );
   }

@@ -78,7 +78,7 @@ class AddInterview extends Component {
       .then((res) => {
         console.log("res => ", res);
         console.log(res.data);
-        window.location = '/';
+        // window.location = '/';
       })
       .catch((error) => {
         // console.log("IN CATCH");
@@ -127,7 +127,7 @@ class AddInterview extends Component {
   render() {
     return (
       <div className="bg-light">
-        <h3> Create Interview</h3>
+        <h3 style={{ textAlign: "center" }}> Create Interview</h3>
 
         {this.state.error ?
           (<Error message={this.state.errorMsg} />) : (<></>)

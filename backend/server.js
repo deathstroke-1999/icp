@@ -3,29 +3,27 @@ const Sequelize = require('sequelize')
 const Op = Sequelize.Op;
 
 // Configuring dotenv file
-// const dotenv = require('dotenv')
-// dotenv.config();
+const dotenv = require('dotenv')
+dotenv.config();
+
 const cors = require('cors');
 const express = require('express')
 
 // Importing Sequelize models 
 const { db, Participants, Interviews } = require('./models/db')
 
-// // setting up bcrypt
-// const bcrypt = require('bcrypt');
-// const saltRounds = 10;
 
-// // setting up nodemailer
-// const nodemailer = require('nodemailer');
-// // Details of account seding mails
-// var smtpTransport = nodemailer.createTransport({
-//     service: "gmail",
-//     host: "smtp.gmail.com",
-//     auth: {
-//         user: process.env.NODEMAILER_EMAIL,
-//         pass: process.env.NODEMAILER_PASS
-//     }
-// });
+// setting up nodemailer
+const nodemailer = require('nodemailer');
+// Details of account seding mails
+var smtpTransport = nodemailer.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    auth: {
+        user: process.env.NODEMAILER_EMAIL,
+        pass: process.env.NODEMAILER_PASS
+    }
+});
 
 const app = express()
 
@@ -78,6 +76,30 @@ app.get('/participants', (req, res) => {
 });
 
 app.get('/interviews', function (req, res) {
+
+    let cDate = new Date();
+
+    Interviews.findAll({
+        where: {
+            date: {
+                [Op.gte]: cDate,
+            }
+        },
+        // attributes: ['date', 'startTime', 'endTime'],
+        order: [['date', 'ASC'], ['startTime', 'ASC'], ['endTime', 'ASC'], ['participantId', 'ASC']]
+        // group: ['date', 'startTime', 'endTime']
+    })
+        .then((records) => {
+            console.log("records : ", records);
+            // console.log("records : ", records.map);
+            // console.log("Mapping : ");
+            // let datesAndTimes = records.map((rec) => rec.dataValues)
+
+            // datesAndTimes.forEach
+
+            res.json(records);
+        })
+
 })
 
 
@@ -90,7 +112,7 @@ app.post('/interviews', function (req, res) {
     let startTime_INC = req.body.startTime;
     let endTime_INC = req.body.endTime;
     let lisOfparticipants = req.body.participants;
-    console.log("lisOfparticipants :", lisOfparticipants);
+    // console.log("lisOfparticipants :", lisOfparticipants);
 
     if (lisOfparticipants.length < 2) {
         console.error("gen error");
@@ -98,7 +120,7 @@ app.post('/interviews', function (req, res) {
     } else {
         console.log("Find Clashes -----------------------__>");
         let participantIdArray = lisOfparticipants.map((p) => p.id);
-        console.log("participantIdArray : ", participantIdArray);
+        // console.log("participantIdArray : ", participantIdArray);
 
         Interviews.findOne({
             where: {
@@ -163,10 +185,10 @@ app.post('/interviews', function (req, res) {
         })
             .then(function (record) {
                 if (record) {
-                    console.log("record : ", record);
+                    // console.log("record : ", record);
                     // There is a CLASH
                     let clashingParticipantId = record.dataValues.participantId;
-                    console.log("clashingParticipantId : ", clashingParticipantId)
+                    // console.log("clashingParticipantId : ", clashingParticipantId)
 
                     let msg = "Following Partipant have Clashing Interviews : ";
                     Participants.findByPk(clashingParticipantId)
@@ -183,7 +205,7 @@ app.post('/interviews', function (req, res) {
                     console.log("NO CLASH");
 
                     lisOfparticipants.forEach(function (oneParticipant) {
-                        console.log("oneParticipant : ", oneParticipant);
+                        // console.log("oneParticipant : ", oneParticipant);
                         let newInterview = {
                             participantId: oneParticipant.id,
                             date: date_INC,
@@ -192,6 +214,26 @@ app.post('/interviews', function (req, res) {
                         }
                         Interviews.create(newInterview).then(intrvw => {
                             console.log("intrvw added ---->>>> ", intrvw);
+
+                            console.log("RUN XXXXXXXXXXXXXX");
+                            let participantEmail = oneParticipant.email;
+                            // Sending a MAIL
+
+                            let mailText = `Date : ${date_INC}, from ${startTime_INC} to ${endTime_INC}`;
+                            var mailOptions = {
+                                to: participantEmail,
+                                subject: 'Interview Details.',
+                                text: mailText
+                            }
+                            smtpTransport.sendMail(mailOptions, function (err, res) {
+                                if (err) {
+                                    console.log("Error : ", err)
+                                }
+                                else {
+                                    console.log('Email sent: ' + res.response);
+                                }
+                            })
+
                         })
                     })
                     res.sendStatus(200);
