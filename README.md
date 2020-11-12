@@ -11,7 +11,7 @@
 
 ## About
 
-ICP is a minimum viable product for the Interview Schudling Task.
+ICP is a minimum viable product for the Interview Scheduling Task.
 
 ### Installing Dependencies
 
