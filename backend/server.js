@@ -69,6 +69,20 @@ function addDumyData() {
 // }, 500);
 
 
+// async function checkRawSeq() {
+//     const users = await db.query('SELECT * FROM participants, interviews where participants.id = interviews.participantId', {
+//         // model: Participants,
+//         mapToModel: true // pass true here if you have any mapped fields
+//     });
+//     console.log("users: ", users)
+// }
+
+// setTimeout(() => {
+//     console.log("CALLED CHECK RAW SEQ : ");
+//     checkRawSeq();
+// }, 500);
+
+
 app.get('/participants', (req, res) => {
     Participants.findAll()
         .then((users) => res.json(users))
@@ -76,20 +90,20 @@ app.get('/participants', (req, res) => {
 });
 
 
-async function getData(obj) {
-    var results = await Interviews.findAll({
-        where: {
-            date: obj.date,
-            startTime: obj.startTime,
-            endTime: obj.endTime,
-        },
-        attributes: ['participantId'],
-    })
-    console.log("getData() result : ", results);
-    let pArray = results.map((res) => res.dataValues.participantId);
-    console.log("pArray() : ", pArray);
-    return results;
-}
+// async function getData(obj) {
+//     var results = await Interviews.findAll({
+//         where: {
+//             date: obj.date,
+//             startTime: obj.startTime,
+//             endTime: obj.endTime,
+//         },
+//         attributes: ['participantId'],
+//     })
+//     console.log("getData() result : ", results);
+//     let pArray = results.map((res) => res.dataValues.participantId);
+//     console.log("pArray() : ", pArray);
+//     return results;
+// }
 
 app.get('/interviews', function (req, res) {
 
@@ -260,7 +274,6 @@ app.post('/interviews', function (req, res) {
                             console.error("gen error");
                             res.status(401).send({ message: msg });
                         })
-
                 }
                 else {
                     // record -> null
@@ -300,10 +313,169 @@ app.post('/interviews', function (req, res) {
                     res.sendStatus(200);
                 }
             })
-
     }
     console.log("Interview ADDED");
+})
 
+app.post('/edit', function (req, res) {
+    // console.log("Request : ", req);
+    console.log("req.body => ", req.body);
+
+
+    let date_INC = req.body.date;
+    let startTime_INC = req.body.startTime;
+    let endTime_INC = req.body.endTime;
+    let lisOfparticipants = req.body.participants;
+    let prev_startTime = req.body.prev_startTime;
+    let prev_endTime = req.body.prev_endTime;
+    let prev_participantsList = req.body.prev_participantsList;
+    let prev_date = req.body.prev_date;
+    // console.log("lisOfparticipants :", lisOfparticipants);
+
+    if (lisOfparticipants.length < 2) {
+        console.error("gen error");
+        res.status(401).send({ message: 'Add atleast 2 particpants please!' });
+    } else {
+        console.log("Find Clashes -----------------------__>");
+        let participantIdArray = lisOfparticipants.map((p) => p.id);
+        // console.log("participantIdArray : ", participantIdArray);
+
+        Interviews.findOne({
+            where: {
+                startTime: {
+                    [Op.ne]: prev_startTime
+                },
+                endTime: {
+                    [Op.ne]: prev_endTime
+                },
+                date: date_INC,
+                [Op.or]: [{
+                    [Op.and]: [{
+                        endTime: {
+                            [Op.gte]: endTime_INC
+                        }
+                    }, {
+                        startTime: {
+                            [Op.lte]: startTime_INC
+                        }
+                    }
+                    ]
+                }, {
+                    [Op.and]: [{
+                        endTime: {
+                            [Op.gte]: endTime_INC
+                        }
+                    }, {
+                        startTime: {
+                            [Op.gte]: startTime_INC
+                        }
+                    }, {
+                        startTime: {
+                            [Op.lt]: endTime_INC
+                        }
+                    }
+                    ]
+                }, {
+                    [Op.and]: [{
+                        endTime: {
+                            [Op.lte]: endTime_INC
+                        }
+                    }, {
+                        startTime: {
+                            [Op.lte]: startTime_INC
+                        }
+                    }, {
+                        endTime: {
+                            [Op.gt]: startTime_INC
+                        }
+                    }
+                    ]
+                }, {
+                    [Op.and]: [{
+                        startTime: {
+                            [Op.gte]: startTime_INC
+                        }
+                    }, {
+                        endTime: {
+                            [Op.lte]: endTime_INC
+                        }
+                    }
+                    ]
+                }],
+                participantId: {
+                    [Op.in]: participantIdArray
+                }
+            }
+        })
+            .then(function (record) {
+                if (record) {
+                    console.log("record : ", record);
+                    console.log("There is a CLASH")
+                    let clashingParticipantId = record.dataValues.participantId;
+                    // console.log("clashingParticipantId : ", clashingParticipantId)
+
+                    let msg = "Following Partipant have Clashing Interviews : ";
+                    Participants.findByPk(clashingParticipantId)
+                        .then((record) => {
+                            console.log("Clashing Record : ", record);
+                            msg = msg + record.dataValues.name + "(" + record.dataValues.email + ")";
+                            console.error("gen error");
+                            res.status(401).send({ message: msg });
+                        })
+
+                }
+                else {
+                    // Delete Old Interview Data
+                    Interviews.destroy({
+                        where: {
+                            startTime: prev_startTime,
+                            endTime: prev_endTime,
+                            date: prev_date,
+                            participantId: {
+                                [Op.in]: prev_participantsList
+                            }
+                        }
+                    })
+
+                    // record -> null
+                    console.log("NO CLASH");
+                    lisOfparticipants.forEach(function (oneParticipant) {
+                        // console.log("oneParticipant : ", oneParticipant);
+                        let newInterview = {
+                            participantId: oneParticipant.id,
+                            date: date_INC,
+                            startTime: startTime_INC,
+                            endTime: endTime_INC
+                        }
+                        Interviews.create(newInterview).then(intrvw => {
+                            console.log("intrvw added ---->>>> ", intrvw);
+
+                            console.log("RUN XXXXXXXXXXXXXX");
+                            let participantEmail = oneParticipant.email;
+                            // Sending a MAIL
+
+                            let mailText = `Date : ${date_INC}, from ${startTime_INC} to ${endTime_INC}`;
+                            var mailOptions = {
+                                to: participantEmail,
+                                subject: 'Interview Details.',
+                                text: mailText
+                            }
+                            smtpTransport.sendMail(mailOptions, function (err, res) {
+                                if (err) {
+                                    console.log("Error : ", err)
+                                }
+                                else {
+                                    console.log('Email sent: ' + res.response);
+                                }
+                            })
+
+                        })
+                    })
+                    res.sendStatus(200);
+                }
+            })
+    }
+    console.log("Interview Updated");
 })
 
 
@@ -312,3 +484,4 @@ db.sync().then(() => {
         console.log(`Server started on http://localhost:${PORT}`);
     })
 })
+

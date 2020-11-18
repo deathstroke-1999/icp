@@ -112,7 +112,7 @@ class InterviewList extends Component {
                   to={{
                     pathname: '/edit',
                     state: {
-                      pid: itr.participantId,
+                      pids: itr.participants,
                       pdate: itr.date,
                       pstarttme: itr.startTime,
                       pendtime: itr.endTime

@@ -25,8 +25,12 @@ class EditInterview extends Component {
       endTime: '',
       participants: [],
       checkedItems: new Map(),
+      pids: [],
       error: false,
-      errorMsg: ""
+      errorMsg: "",
+      prev_date: new Date(),
+      prev_startTime: '',
+      prev_endTime: '',
     }
 
     this.handleDateChange = this.handleDateChange.bind(this);
@@ -34,23 +38,41 @@ class EditInterview extends Component {
     this.handleFormSubmit = this.handleFormSubmit.bind(this);
     this.handleStartTimeChange = this.handleStartTimeChange.bind(this);
     this.handleEndTimeChange = this.handleEndTimeChange.bind(this);
-
   }
 
   componentDidMount() {
+    let { pids,
+      pdate,
+      pstarttme,
+      pendtime,
+    } = this.props.location.state;
 
-
-
-
+    // console.log("PROPS DATA : ", pids, pdate, pstarttme, pendtime)
 
     axios.get('http://localhost:5000/participants')
       .then((res) => {
         console.log("res => ", res);
+
+        let tempMap = new Map();
+        let participants = res.data;
+        participants.forEach(element => {
+          if (pids.includes(element.id)) {
+            tempMap.set(element.email, true)
+          }
+        });
+
         this.setState({
           participants: res.data,
+          date: new Date(pdate),
+          startTime: pstarttme,
+          endTime: pendtime,
+          pids: pids,
+          checkedItems: tempMap,
+          prev_date: new Date(pdate),
+          prev_startTime: pstarttme,
+          prev_endTime: pendtime,
         })
-
-        console.log("Updated STATE : ", this.state.participants);
+        console.log("Updated STATE : ", this.state);
       })
       .catch((error) => {
         console.log("Error : ", error);
@@ -71,17 +93,21 @@ class EditInterview extends Component {
       date: this.state.date,
       startTime: this.state.startTime,
       endTime: this.state.endTime,
-      participants: lisOfparticipants
+      participants: lisOfparticipants,
+      prev_date: this.state.prev_date,
+      prev_startTime: this.state.prev_startTime,
+      prev_endTime: this.state.prev_endTime,
+      prev_participantsList: this.state.pids
     }
 
     console.log("New Exercise => ", newInterview);
 
     // making POST REQUEST to backend  
-    axios.post('http://localhost:5000/interviews', newInterview)
+    axios.post('http://localhost:5000/edit', newInterview)
       .then((res) => {
         console.log("res => ", res);
         console.log(res.data);
-        window.location = '/';
+        // window.location = '/';
       })
       .catch((error) => {
         let errorMsg = error.response.data.message;
@@ -117,23 +143,11 @@ class EditInterview extends Component {
     })
   }
 
-
   render() {
-
-    let { pid,
-      pdate,
-      pstarttme,
-      pendtime,
-    } = this.props.location.state;
-
-    console.log(pid,
-      pdate,
-      pstarttme,
-      pendtime)
 
     return (
       <div className="bg-light">
-        <h3 style={{ textAlign: "center" }}> Create Interview</h3>
+        <h3 style={{ textAlign: "center" }}>Edit Interview</h3>
 
         {this.state.error ?
           (<Error message={this.state.errorMsg} />) : (<></>)
